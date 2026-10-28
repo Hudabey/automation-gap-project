@@ -1,0 +1,25 @@
+Transitions  (time s, from -> to, completed cycles, level m)
+     1.00  IDLE        -> FILL        cycle 0  level 0.000
+    46.01  FILL        -> HEAT_HOLD   cycle 0  level 0.900
+    66.01  HEAT_HOLD   -> DRAIN       cycle 0  level 0.900
+    98.02  DRAIN       -> FILL        cycle 1  level 0.100
+   138.03  FILL        -> HEAT_HOLD   cycle 1  level 0.900
+   158.03  HEAT_HOLD   -> DRAIN       cycle 1  level 0.900
+   190.04  DRAIN       -> FILL        cycle 2  level 0.100
+   230.05  FILL        -> HEAT_HOLD   cycle 2  level 0.900
+   250.05  HEAT_HOLD   -> DRAIN       cycle 2  level 0.900
+   282.06  DRAIN       -> FILL        cycle 3  level 0.100
+   322.07  FILL        -> HEAT_HOLD   cycle 3  level 0.900
+   342.07  HEAT_HOLD   -> DRAIN       cycle 3  level 0.900
+   374.08  DRAIN       -> FILL        cycle 4  level 0.100
+   414.10  FILL        -> HEAT_HOLD   cycle 4  level 0.900
+   434.10  HEAT_HOLD   -> DRAIN       cycle 4  level 0.900
+   466.11  DRAIN       -> MAINTENANCE cycle 5  level 0.100
+   556.11  MAINTENANCE -> IDLE        cycle 0  level 0.100
+
+Spec checks
+  PASS  1 M1 stops at B3
+  PASS  2 heater only from B2
+  PASS  3 hold = 20 s
+  PASS  4 M1/M2 interlocked
+  PASS  5 five cycles then 90 s idle

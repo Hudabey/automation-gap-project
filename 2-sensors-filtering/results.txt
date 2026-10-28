@@ -1,0 +1,44 @@
+2a  Accuracy vs precision (200 readings per point, uncalibrated scaling counts/27648*10 bar)
+      true (bar)   mean read (bar)   bias (bar)   std (bar)
+         0.00         0.145         +0.145      0.035
+         2.50         2.797         +0.297      0.039
+         5.00         5.392         +0.392      0.037
+         7.50         7.949         +0.449      0.040
+        10.00        10.453         +0.453      0.037
+    Bias (accuracy error) is systematic: up to ~0.45 bar, so calibration is needed.
+    Spread (precision) is random: ~0.04 bar, set by noise; calibration cannot remove it, filtering can reduce it.
+    ADC resolution: 10 bar / 27648 counts = 0.36 mbar per count, far below the noise.
+
+2b  Calibration against a reference gauge (11 points 0..10 bar, validated on 10 other points)
+    two-point (zero/span):  p = 0.9691 * r -0.1393   max error 0.094 bar
+    least squares (11 pts): p = 0.9699 * r -0.1992   max error 0.048 bar
+    uncalibrated:                                       max error 0.454 bar
+    Two-point removes offset and span error exactly at the ends but leaves the bow of the non-linearity
+    in mid-range; least squares spreads that residual over the range and lowers the worst case.
+    In the PLC this is one line after NORM_X/SCALE_X:  p_cal := a * p_raw + b;
+
+2c  Filtering a 2 -> 6 bar step, 10 ms sampling
+      filter               noise std (bar)   2 % settling time
+      raw                  0.0404            never (noise > band)
+      moving average N=20  0.0103            0.19 s
+      exponential a=0.1    0.0107            0.34 s
+    Moving average: noise / sqrt(N) = 0.0090 expected; delay N*dt = 0.20 s, always stable (FIR).
+    Exponential: pole at z = 1 - a = 0.9; stable for 0 < a < 2 (|1 - a| < 1);
+    time constant tau = dt(1-a)/a = 0.09 s; noise gain sqrt(a/(2-a)) = 0.229.
+      a = 0.5: output after 200 steps of a unit input =  1
+      a = 1.0: output after 200 steps of a unit input =  1
+      a = 1.9: output after 200 steps of a unit input =  1
+      a = 2.1: output after 200 steps of a unit input = -1.9e+08
+
+2d  Kalman filter: tank level with a constant-rate model, 2 cm sensor noise, 0.1 s steps
+    RMS error raw sensor = 2.00 cm, Kalman estimate = 0.20 cm
+    level gain K: first step 1.000, after 10 steps 0.318, steady state 0.018
+    The gain starts near 1 (trust the sensor while the model is unknown) and converges to a constant
+    as P converges; with (F, H) observable and Q > 0 the steady-state filter is stable.
+    It also estimates the fill rate: 3.90 mm/s (true 4.30 mm/s), which a plain filter cannot.
+
+2e  Fusion of two level sensors (2 cm and 5 cm noise), 5000 samples
+    weights 1/sigma^2: w1 = 0.862, w2 = 0.138
+    std: sensor 1 0.0198, sensor 2 0.0503, plain average 0.0271, weighted 0.0185 m
+    theory: 1/sqrt(1/s1^2 + 1/s2^2) = 0.0186 m; the weighted fusion beats the best single sensor,
+    the plain average does not. This is the static case of the Kalman update in 2d.

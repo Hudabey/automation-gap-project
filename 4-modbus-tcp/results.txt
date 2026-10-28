@@ -1,0 +1,44 @@
+
+FC01 Read Coils start=0 qty=3
+  request  [MBAP 00 01 00 00 00 06 01] [PDU 01 00 00 00 03]
+  response [MBAP 00 01 00 00 00 04 01] [PDU 01 01 05]
+  decoded  coils = [1, 0, 1]
+
+FC03 Read Holding Registers start=0 qty=5
+  request  [MBAP 00 02 00 00 00 06 01] [PDU 03 00 00 00 05]
+  response [MBAP 00 02 00 00 00 0D 01] [PDU 03 0A 02 64 00 02 00 01 00 14 00 5A]
+  decoded  registers = [612, 2, 1, 20, 90]
+
+FC06 Write Single Register addr=3 value=25
+  request  [MBAP 00 03 00 00 00 06 01] [PDU 06 00 03 00 19]
+  response [MBAP 00 03 00 00 00 06 01] [PDU 06 00 03 00 19]
+  decoded  echo of the request = success
+
+FC16 Write Multiple Registers start=3 values=[30, 120]
+  request  [MBAP 00 04 00 00 00 0B 01] [PDU 10 00 03 00 02 04 00 1E 00 78]
+  response [MBAP 00 04 00 00 00 06 01] [PDU 10 00 03 00 02]
+  decoded  wrote 2 registers
+
+FC03 Read Holding Registers start=4 qty=3
+  request  [MBAP 00 05 00 00 00 06 01] [PDU 03 00 04 00 03]
+  response [MBAP 00 05 00 00 00 03 01] [PDU 83 02]
+  decoded  exception: function 0x83 = 0x03 | 0x80, code 2 (illegal data address)
+
+FC01 Read Coils start=0 qty=0
+  request  [MBAP 00 06 00 00 00 06 01] [PDU 01 00 00 00 00]
+  response [MBAP 00 06 00 00 00 03 01] [PDU 81 03]
+  decoded  exception: function 0x81 = 0x01 | 0x80, code 3 (illegal data value)
+
+FC43 (not implemented)
+  request  [MBAP 00 07 00 00 00 05 01] [PDU 2B 0E 01 00]
+  response [MBAP 00 07 00 00 00 03 01] [PDU AB 01]
+  decoded  exception: function 0xAB = 0x2B | 0x80, code 1 (illegal function)
+
+Checks
+  PASS  read coils M1,M2,E1
+  PASS  read 5 holding registers
+  PASS  write heat time 25 s
+  PASS  write heat + maintenance times
+  PASS  exception 02, address past the map
+  PASS  exception 03, quantity 0
+  PASS  exception 01, unsupported FC 0x2B
